@@ -45,6 +45,7 @@ parser.add_argument('--mutationProbability', help="The probability to mutate a c
 parser.add_argument('--proportionOfNewIndividuals', help="The proportion of randomly generates individuals per generation. Default: 0.2", type=float, default=0.2)
 parser.add_argument('--maximumNumberOfMissedCreationTrials', help="The maximum number of missed creation trials. Default: 1000", type=int, default=1000)
 parser.add_argument('--maximumValidationIoUToStop', help="The champion validation average intersection over union to stop. Default: 0.05", type=float, default=0.05)
+parser.add_argument('--maximumNumberOfGenerations', help="The maximum number of generations. Default: 32", type=int, default=32)
 args = parser.parse_args()
 
 constantCreationParametersList = ast.literal_eval(args.constantCreationParametersList)
@@ -172,6 +173,8 @@ def main():
         if champion_validation_averageIoU <= args.maximumValidationIoUToStop:
             evolution_must_continue = False
         generationNdx += 1
+        if generationNdx > args.maximumNumberOfGenerations:
+            evolution_must_continue = False
 
     logging.info("Testing the final champion...")
     champion_test_intersection_over_union_list = semseg_pop.BatchIntersectionOverUnion(final_champion,
