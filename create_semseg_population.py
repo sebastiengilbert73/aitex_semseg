@@ -122,54 +122,57 @@ def main():
     evolution_must_continue = True
     with open(os.path.join(args.outputDirectory, "generations.csv"), 'w+') as generations_file:
         generations_file.write("generation,train_lowest_cost,train_median_cost,champion_validation_averageIoU\n")
-        # for generationNdx in range(1, args.numberOfGenerations + 1):
-        generationNdx = 1
-        while evolution_must_continue:
-            logging.info(" ***** Generation {} *****".format(generationNdx))
-            individual_to_cost_dict = semseg_pop.NewGenerationWithTournament(
-                inputOutputTuplesList=train_tuples,
-                variableNameToTypeDict=variableName_to_type,
-                interpreter=interpreter,
-                returnType=return_type,
-                numberOfTournamentParticipants=args.numberOfTournamentParticipants,
-                mutationProbability=args.mutationProbability,
-                currentIndividualToCostDict=individual_to_cost_dict,
-                proportionOfConstants=args.proportionOfConstants,
-                levelToFunctionProbabilityDict=levelToFunctionProbabilityDict,
-                functionNameToWeightDict=None,
-                constantCreationParametersList=constantCreationParametersList,
-                proportionOfNewIndividuals=args.proportionOfNewIndividuals,
-                weightForNumberOfElements=args.weightForNumberOfNodes,
-                maximumNumberOfMissedCreationTrials=args.maximumNumberOfMissedCreationTrials
-            )
 
-            (champion, lowest_cost) = semseg_pop.Champion(individual_to_cost_dict)
-            median_cost = semseg_pop.MedianCost(individual_to_cost_dict)
+    # for generationNdx in range(1, args.numberOfGenerations + 1):
+    generationNdx = 1
+    while evolution_must_continue:
+        logging.info(" ***** Generation {} *****".format(generationNdx))
+        individual_to_cost_dict = semseg_pop.NewGenerationWithTournament(
+            inputOutputTuplesList=train_tuples,
+            variableNameToTypeDict=variableName_to_type,
+            interpreter=interpreter,
+            returnType=return_type,
+            numberOfTournamentParticipants=args.numberOfTournamentParticipants,
+            mutationProbability=args.mutationProbability,
+            currentIndividualToCostDict=individual_to_cost_dict,
+            proportionOfConstants=args.proportionOfConstants,
+            levelToFunctionProbabilityDict=levelToFunctionProbabilityDict,
+            functionNameToWeightDict=None,
+            constantCreationParametersList=constantCreationParametersList,
+            proportionOfNewIndividuals=args.proportionOfNewIndividuals,
+            weightForNumberOfElements=args.weightForNumberOfNodes,
+            maximumNumberOfMissedCreationTrials=args.maximumNumberOfMissedCreationTrials
+        )
 
-            # Validation
-            champion_validation_intersection_over_union_list = semseg_pop.BatchIntersectionOverUnion(champion,
-                                                                                            validation_tuples, variableName_to_type,
-                                                                                            interpreter, return_type)
-            champion_validation_averageIoU = statistics.mean(champion_validation_intersection_over_union_list)
+        (champion, lowest_cost) = semseg_pop.Champion(individual_to_cost_dict)
+        median_cost = semseg_pop.MedianCost(individual_to_cost_dict)
 
-            logging.info(
-                "Generation {}: lowest cost = {}; median cost = {}; champion_validation_averageIoU = {}".format(generationNdx,
-                                                                                                     lowest_cost,
-                                                                                                     median_cost,
-                                                                                                     champion_validation_averageIoU))
+        # Validation
+        champion_validation_intersection_over_union_list = semseg_pop.BatchIntersectionOverUnion(champion,
+                                                                                        validation_tuples, variableName_to_type,
+                                                                                        interpreter, return_type)
+        champion_validation_averageIoU = statistics.mean(champion_validation_intersection_over_union_list)
+
+        logging.info(
+            "Generation {}: lowest cost = {}; median cost = {}; champion_validation_averageIoU = {}".format(generationNdx,
+                                                                                                 lowest_cost,
+                                                                                                 median_cost,
+                                                                                                 champion_validation_averageIoU))
+        with open(os.path.join(args.outputDirectory, "generations.csv"), 'w+') as generations_file:
             generations_file.write("{},{},{},{}\n".format(generationNdx, lowest_cost, median_cost, champion_validation_averageIoU))
 
-            # Save the champion
-            champion_filepath = os.path.join(args.outputDirectory,
-                                             "champion_{}_{:.4f}_{:.4f}.xml".format(generationNdx, lowest_cost,
-                                                                                    champion_validation_averageIoU))
-            champion.Save(champion_filepath)
-            if champion_validation_averageIoU < lowest_validation_IoU:
-                lowest_validation_IoU = champion_validation_averageIoU
-                final_champion = champion
-            if champion_validation_averageIoU <= args.maximumValidationIoUToStop:
-                evolution_must_continue = False
-            generationNdx += 1
+        # Save the champion
+        champion_filepath = os.path.join(args.outputDirectory,
+                                         "champion_{}_{:.4f}_{:.4f}.xml".format(generationNdx, lowest_cost,
+                                                                                champion_validation_averageIoU))
+        champion.Save(champion_filepath)
+        if champion_validation_averageIoU < lowest_validation_IoU:
+            lowest_validation_IoU = champion_validation_averageIoU
+            final_champion = champion
+        if champion_validation_averageIoU <= args.maximumValidationIoUToStop:
+            evolution_must_continue = False
+        generationNdx += 1
+
     logging.info("Testing the final champion...")
     champion_test_intersection_over_union_list = semseg_pop.BatchIntersectionOverUnion(final_champion,
                                                                                              test_tuples,
