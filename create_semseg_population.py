@@ -212,12 +212,12 @@ def InputOutputTuplesList(defect_images_directory, mask_images_directory, noDefe
         image = cv2.imread(defect_image_filepath, cv2.IMREAD_GRAYSCALE)
         if image.shape != image_shapeHW:
             logging.warning("InputOutputTuplesList(): Resizing image {} to {}".format(defect_image_filepath, image_shapeHW))
-            image = cv2.resize(image, image_shapeHW)
+            image = cv2.resize(image, (image_shapeHW[1], image_shapeHW[0]))
 
         mask = cv2.imread(corresponding_mask_filepath, cv2.IMREAD_GRAYSCALE)
         if mask.shape != image_shapeHW:
             logging.warning("InputOutputTuplesList(): Resizing mask {} to {}".format(corresponding_mask_filepath, image_shapeHW))
-            mask = cv2.resize(mask, image_shapeHW)
+            mask = cv2.resize(mask, (image_shapeHW[1], image_shapeHW[0]))
         # Apply threshold to get a truly binary image
         _, mask = cv2.threshold(mask, 127, 255, cv2.THRESH_BINARY)
         input = {'image': image}
@@ -229,7 +229,7 @@ def InputOutputTuplesList(defect_images_directory, mask_images_directory, noDefe
             image = cv2.imread(noDefect_image_filepath, cv2.IMREAD_GRAYSCALE)
             if image.shape != image_shapeHW:
                 logging.warning("InputOutputTuplesList(): Resizing image {} to {}".format(noDefect_image_filepath, image_shapeHW))
-                image = cv2.resize(image, image_shapeHW)
+                image = cv2.resize(image, (image_shapeHW[1], image_shapeHW[0]))
             mask = np.zeros(image_shapeHW, dtype=np.uint8)  # The mask is completely black since there is no defect
             input = {'image': image}
             inputOutputTuples.append((input, mask))
