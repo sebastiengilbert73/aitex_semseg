@@ -52,7 +52,17 @@ constantCreationParametersList = ast.literal_eval(args.constantCreationParameter
 image_shapeHW = (constantCreationParametersList[5], constantCreationParametersList[4])
 levelToFunctionProbabilityDict = ast.literal_eval(args.levelToFunctionProbabilityDict)
 
-logging.basicConfig(level=logging.DEBUG, format='%(asctime)-15s %(levelname)s %(message)s')
+#logging.basicConfig(level=logging.DEBUG, format='%(asctime)-15s %(levelname)s %(message)s')
+
+file_handler = logging.FileHandler(filename=os.path.join(args.outputDirectory, 'create_semseg_population.log'))
+stdout_handler = logging.StreamHandler(sys.stdout)
+handlers = [file_handler, stdout_handler]
+
+logging.basicConfig(
+    level=logging.DEBUG,
+    format='[%(asctime)s] {%(filename)s:%(lineno)d} %(levelname)s - %(message)s',
+    handlers=handlers
+)
 
 def main():
     logging.info("create_semseg_population.py main()")
@@ -159,7 +169,7 @@ def main():
                                                                                                  lowest_cost,
                                                                                                  median_cost,
                                                                                                  champion_validation_averageIoU))
-        with open(os.path.join(args.outputDirectory, "generations.csv"), 'w+') as generations_file:
+        with open(os.path.join(args.outputDirectory, "generations.csv"), 'a+') as generations_file:
             generations_file.write("{},{},{},{}\n".format(generationNdx, lowest_cost, median_cost, champion_validation_averageIoU))
 
         # Save the champion
